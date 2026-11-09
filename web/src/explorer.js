@@ -17,6 +17,7 @@ export function createExplorer(manifest, state) {
   const $ = (id) => document.getElementById(id);
   const tabs = $("video-tabs");
   const strip = $("strip");
+  const labels = $("strip-labels");
   const bubbles = $("bubbles");
   const list = $("wordlist");
   const listeners = new Set();
@@ -83,7 +84,8 @@ export function createExplorer(manifest, state) {
     if (drawnStrip !== key) {
       drawnStrip = key;
       strip.innerHTML = "";
-      const frames = row("frames", "");
+      labels.innerHTML = "";
+      const frames = row("frames", "Time");
       for (const i of indices) {
         const b = document.createElement("button");
         b.className = "frame-btn";
@@ -91,6 +93,7 @@ export function createExplorer(manifest, state) {
         b.role = "option";
         b.dataset.index = i;
         b.title = formatTime(i * manifest.segmentSeconds);
+        b.setAttribute("aria-label", formatTime(i * manifest.segmentSeconds));
         b.style.backgroundImage = `url(${spriteUrl(`${video.id}:${i}`)})`;
         b.addEventListener("click", () => set({ index: i }));
         frames.append(b);
@@ -135,7 +138,7 @@ export function createExplorer(manifest, state) {
     });
     const current = strip.querySelector(`.frame-btn[data-index="${state.index}"]`);
     if (current) {
-      const target = current.offsetLeft - strip.clientWidth / 2 + current.clientWidth / 2;
+      const target = current.offsetLeft - strip.offsetLeft - strip.clientWidth / 2 + current.clientWidth / 2;
       strip.scrollTo({ left: Math.max(0, target), behavior: "smooth" });
     }
   }
@@ -144,9 +147,9 @@ export function createExplorer(manifest, state) {
     const r = document.createElement("div");
     r.className = `strip-row ${kind}`;
     const l = document.createElement("span");
-    l.className = "strip-label";
+    l.className = `strip-label ${kind}`;
     l.textContent = label;
-    r.append(l);
+    labels.append(l);
     return r;
   }
 
