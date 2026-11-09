@@ -187,7 +187,7 @@ export function createExplorer(manifest, state) {
         change.appeared.slice(0, 3).map((w) => `<span class="plus">+${w}</span>`).join(" ") + " &nbsp; " +
         change.faded.slice(0, 3).map((w) => `<span class="minus">−${w}</span>`).join(" ")
       : "";
-    drawBubbles(bubbles, words, { count: state.lens === "sparse" ? 6 : 14 });
+    drawBubbles(bubbles, words, { count: state.lens === "sparse" ? 6 : 14, compact: matchMedia("(max-width: 640px)").matches });
     list.innerHTML = words
       .slice(0, 12)
       .map(([p, s]) => `<li><span>${p}</span><span class="score">${s.toFixed(3)}</span></li>`)

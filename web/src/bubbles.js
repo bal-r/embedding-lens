@@ -16,7 +16,7 @@ function sizes(words) {
   return words.map(([phrase, score], rank) => ({ phrase, score, rank, size: 0.12 + Math.pow((score - min) / span, 1.6) }));
 }
 
-export function drawBubbles(svgEl, words, { count = 14, minFont = 10 } = {}) {
+export function drawBubbles(svgEl, words, { count = 14, minFont = 10, compact = false } = {}) {
   const svg = select(svgEl);
   const { width, height } = svgEl.getBoundingClientRect();
   if (!width || !height) return;
@@ -50,5 +50,25 @@ export function drawBubbles(svgEl, words, { count = 14, minFont = 10 } = {}) {
     .text((d) => d.data.phrase)
     .style("font-size", (d) => `${Math.max(minFont, Math.min(d.r / 3.2, (2.1 * d.r) / Math.max(d.data.phrase.length, 4)))}px`)
     .style("font-weight", (d) => (d.data.rank < 3 ? 600 : 400))
-    .style("opacity", (d) => (d.r < 16 ? 0 : 1));
+    .style("opacity", (d) => (d.r < 16 ? 0 : 1))
+    .each(function (d) {
+      if (!compact || d.r < 16) return;
+      const text = select(this);
+      const available = d.r * 1.65;
+      const parts = d.data.phrase.split(/[ -]+/);
+      if (this.getComputedTextLength() > available && parts.length > 1) {
+        let split = 1;
+        for (let i = 2; i < parts.length; i++) {
+          if (Math.max(parts.slice(0, i).join(" ").length, parts.slice(i).join(" ").length)
+            < Math.max(parts.slice(0, split).join(" ").length, parts.slice(split).join(" ").length)) split = i;
+        }
+        text.text(null);
+        text.append("tspan").attr("x", 0).attr("dy", "-0.55em").text(parts.slice(0, split).join(" "));
+        text.append("tspan").attr("x", 0).attr("dy", "1.1em").text(parts.slice(split).join(" "));
+      }
+      const lines = this.querySelectorAll("tspan");
+      const length = lines.length ? Math.max(...[...lines].map((line) => line.getComputedTextLength())) : this.getComputedTextLength();
+      const font = parseFloat(text.style("font-size")) * Math.min(1, available / (length || 1));
+      text.style("font-size", `${font}px`).style("opacity", font < minFont ? 0 : 1);
+    });
 }

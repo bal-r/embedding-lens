@@ -17,18 +17,27 @@ async function hero(manifest, state) {
   const sprite = document.getElementById("hero-sprite");
   const svg = document.getElementById("hero-bubbles");
   const caption = document.getElementById("hero-caption");
+  const lens = state.lens;
   const data = await loadReadouts(state.model, state.tier);
   const featured = FEATURED.filter((key) => isAvailable(manifest, key));
   let i = 0;
+  let current;
+  const draw = () => {
+    if (!current) return;
+    const compact = matchMedia("(max-width: 640px)").matches;
+    drawBubbles(svg, data.segments[current][lens], { count: compact ? 5 : 9, minFont: compact ? 9 : 11, compact });
+  };
   const show = () => {
     const key = featured[i % featured.length];
+    current = key;
     const video = manifest.videos.find((v) => v.id === key.split(":")[0]);
     sprite.style.backgroundImage = `url(${spriteUrl(key)})`;
     caption.textContent = `${video.title.split(",")[0]} · ${formatTime(timeOf(manifest, key))}`;
-    drawBubbles(svg, data.segments[key][state.lens], { count: 9, minFont: 11 });
+    draw();
     i++;
   };
   show();
+  new ResizeObserver(draw).observe(svg);
   if (!matchMedia("(prefers-reduced-motion: reduce)").matches) setInterval(show, 4200);
 }
 
