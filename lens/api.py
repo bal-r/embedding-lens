@@ -18,6 +18,7 @@ from lens.index import load_segments, load_vocab
 from lens.models import MODEL_NAMES, load
 from lens.readout import METHODS, Space, softmax
 from lens.videos import all_segments
+from lens.vocab import VocabularyTier
 
 DEFAULT_MODEL = "qwen3vl"
 
@@ -73,7 +74,7 @@ def health() -> dict:
 @app.get("/api/readout")
 def readout(
     segment: str, model: str = DEFAULT_MODEL, method: str | None = None,
-    tier: str = "medium", n: int = 30,
+    tier: VocabularyTier = "medium", n: int = 30,
 ) -> dict:
     method = _method(model, method)
     _check(model, method)
@@ -90,7 +91,7 @@ class ScoreRequest(BaseModel):
     words: list[str] = Field(min_length=1, max_length=10)
     model: str = DEFAULT_MODEL
     method: str | None = None
-    tier: str = "large"
+    tier: VocabularyTier = "large"
 
 
 @app.post("/api/score")
@@ -136,7 +137,7 @@ def search(req: SearchRequest) -> dict:
 class RerankRequest(BaseModel):
     segment: str
     model: str = DEFAULT_MODEL
-    tier: str = "medium"
+    tier: VocabularyTier = "medium"
     k: int = Field(default=50, ge=5, le=100)
 
 

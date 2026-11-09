@@ -23,7 +23,15 @@ CHUNK = 4096
 
 
 def model_dir(model_name: str):
-    return EMBEDDINGS_DIR / model_name
+    paths = {
+        "qwen3vl": EMBEDDINGS_DIR / "qwen3vl",
+        "gemma2": EMBEDDINGS_DIR / "gemma2",
+        "siglip2": EMBEDDINGS_DIR / "siglip2",
+    }
+    try:
+        return paths[model_name]
+    except KeyError:
+        raise ValueError(f"unknown model {model_name!r}") from None
 
 
 def _progress(label: str):
