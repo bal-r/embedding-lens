@@ -1,0 +1,17 @@
+name: Bug report
+description: Report a reproducible problem in the demo or pipeline.
+body:
+  - type: textarea
+    id: behavior
+    attributes:
+      label: What happened?
+      description: Include what you expected and how to reproduce it. Screenshots are welcome.
+    validations:
+      required: true
+  - type: textarea
+    id: configuration
+    attributes:
+      label: Configuration
+      description: Include browser/device or Python environment, commit, model, vocabulary, lens and video timestamp where relevant.
+    validations:
+      required: true
