@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this project, cite the repository and the commit used in your experiment."
+type: software
+title: "embedding-lens: inspecting video embeddings through phrase readouts"
+authors:
+  - family-names: "Rácz"
+    given-names: "Balázs"
+repository-code: "https://github.com/bal-r/embedding-lens"
+url: "https://embedding-lens.balta-tech.com/"
+abstract: "An interactive exploratory study of video-text phrase readouts, vocabulary effects and reranking. Recorded results use six videos and a small AI-judged sample; they are not a general benchmark."

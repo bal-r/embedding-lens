@@ -1,12 +1,10 @@
 # embedding-lens
 
-<p align="center">
-  <a href="https://embedding-lens.balta-tech.com"><b>embedding-lens.balta-tech.com</b></a> ·
-  <a href="https://balta-tech.com">Balta Tech</a> ·
-  <a href="docs/research.md">Research notes</a>
-</p>
+## [Open live demo ↗](https://embedding-lens.balta-tech.com/)
 
----
+Scrub through video, inspect the phrases and compare the models. No sign-up required.
+
+[Research notes](docs/research.md) · [Reproduce the experiments](#run-it) · [Balta Tech](https://balta-tech.com)
 
 **embedding-lens** reads video embeddings back out as words. Six videos are cut into 291
 five-second moments; each moment is embedded into a space shared with text, and the phrases that
@@ -107,8 +105,9 @@ ignored by Git; articles can link readers directly to this repository or the dem
 ## Deploy
 
 Static build served by the `embedding-lens` Cloudflare Worker; the API runs separately behind `embedding-lens-api.balta-tech.com` ([`wrangler.jsonc`](wrangler.jsonc)).
-Every push to `main` runs [`deploy.yml`](.github/workflows/deploy.yml): `npm ci`, `npm run build`,
-`wrangler deploy`. Requires the repository secret `CLOUDFLARE_API_TOKEN`. The generated site data
+Pull requests run frontend tests, a production build and Python unit tests in
+[`deploy.yml`](.github/workflows/deploy.yml). Pushes to `main` deploy with `wrangler deploy` after
+those checks pass. Requires the repository secret `CLOUDFLARE_API_TOKEN`. The generated site data
 in `web/public/data` and `web/public/media` is committed, so CI does not need the models.
 
 ## Credits
@@ -118,3 +117,13 @@ Vocabularies from [RAM++](https://github.com/xinyu1205/recognize-anything), Imag
 [timm](https://github.com/huggingface/pytorch-image-models), [Places365](https://github.com/CSAILVision/places365),
 [Kinetics](https://github.com/deepmind/kinetics-i3d) and [WordNet](https://wordnet.princeton.edu/).
 Built by [Balta Tech](https://balta-tech.com).
+
+## License and contributions
+
+Original source code is available under the [MIT license](LICENSE). Model weights, source videos,
+video frames and third-party vocabulary material retain their respective terms; see
+[third-party materials](THIRD_PARTY.md) before redistributing them.
+
+For a bug report, a reproduction question or a proposed experiment, see
+[contributing](CONTRIBUTING.md). Report sensitive security issues through
+[private vulnerability reporting](SECURITY.md).
