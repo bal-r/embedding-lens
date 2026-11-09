@@ -3,10 +3,46 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>embedding-lens — what does a video embedding see?</title>
-    <meta name="description" content="Six videos, 291 five-second moments, 23,000 words: read a video embedding back out as language." />
-    <meta property="og:title" content="embedding-lens" />
-    <meta property="og:description" content="What does a video embedding actually see? Read it back out as words." />
+    <title>Video embedding explorer and research | Balta Tech</title>
+    <meta name="description" content="Explore video embeddings with ranked words, model comparisons and reranking. An interactive Balta Tech research demo with reproducible results and source code." />
+    <link rel="canonical" href="https://embedding-lens.balta-tech.com/" />
+    <meta name="robots" content="index,follow" />
+    <meta name="author" content="Balázs Rácz, Balta Tech" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Balta Tech" />
+    <meta property="og:url" content="https://embedding-lens.balta-tech.com/" />
+    <meta property="og:title" content="What does a video embedding see?" />
+    <meta property="og:description" content="Inspect video embeddings, compare models and see what reranking changes. Reproducible engineering research by Balta Tech." />
+    <meta property="og:image" content="https://embedding-lens.balta-tech.com/social-preview.jpg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="653" />
+    <meta property="og:image:alt" content="A video moment beside its phrases before and after reranking in the working embedding-lens demo." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="What does a video embedding see?" />
+    <meta name="twitter:description" content="An interactive video embedding experiment by Balta Tech. Inspect ranked phrases, compare models and explore reranking." />
+    <meta name="twitter:image" content="https://embedding-lens.balta-tech.com/social-preview.jpg" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "embedding-lens",
+        "url": "https://embedding-lens.balta-tech.com/",
+        "description": "An interactive research demo for inspecting video embeddings through ranked words, model comparisons and reranking.",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Any",
+        "browserRequirements": "Requires JavaScript for interactive features",
+        "isAccessibleForFree": true,
+        "inLanguage": "en",
+        "image": "https://embedding-lens.balta-tech.com/social-preview.jpg",
+        "codeRepository": "https://github.com/bal-r/embedding-lens",
+        "author": { "@type": "Person", "name": "Balázs Rácz" },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Balta Tech",
+          "url": "https://balta-tech.com/en/"
+        }
+      }
+    </script>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -163,7 +199,9 @@
         <div class="section-head">
           <p class="eyebrow">Lab</p>
           <h2>What the experiments showed</h2>
-          <p class="section-sub">Small, reproducible experiments behind every default on this page. Code in <a href="https://github.com/Balta-Tech/embedding-lens/tree/main/experiments">experiments/</a>.</p>
+          <p class="section-sub">Small, reproducible experiments behind this page. A readout can find its original video while describing it poorly: retrieval usefulness and visible correctness are different things.</p>
+          <p class="hint">The study covers 291 moments from six videos and three embedding models. Phrase correctness was evaluated on 12 moments by one AI annotator. These are exploratory findings, not a general model benchmark.</p>
+          <p class="hint">Inspect the <a href="https://github.com/bal-r/embedding-lens/tree/main/experiments">experiment code</a>, <a href="/data/results/agreement.json">recorded metric agreement</a> and <a href="https://github.com/bal-r/embedding-lens/blob/main/experiments/judgements.json">phrase judgements</a>.</p>
         </div>
         <div class="lab" id="lab-root"></div>
       </section>
@@ -172,11 +210,12 @@
     <footer class="footer">
       <div>
         <a class="brand small" href="#top">embedding-lens</a>
-        <p>Built by <a href="https://balta-tech.com">Balta Tech</a>. Videos from <a href="https://www.youtube.com/@rbalazs">@rbalazs</a>.</p>
+        <p>Built by <a href="https://balta-tech.com/en/">Balta Tech</a>. Videos from <a href="https://www.youtube.com/@rbalazs">@rbalazs</a>.</p>
+        <p>Explore our <a href="https://balta-tech.com/en/solutions/data-ai/">data and applied AI work</a>.</p>
       </div>
       <div class="footer-links">
-        <a href="https://github.com/Balta-Tech/embedding-lens">Source</a>
-        <a href="https://github.com/Balta-Tech/embedding-lens/blob/main/docs/research.md">Research notes</a>
+        <a href="https://github.com/bal-r/embedding-lens">Source on GitHub</a>
+        <a href="https://github.com/bal-r/embedding-lens/blob/main/docs/research.md">Research notes</a>
       </div>
     </footer>
 
@@ -198,7 +237,7 @@
       <div class="backend-card">
         <h3>Live features</h3>
         <p>Everything on this page works from precomputed results. Free-text search and scoring words outside the built-in vocabulary need the embedding models, served from <code>embedding-lens-api.balta-tech.com</code>. When that is offline, run the backend yourself:</p>
-        <pre><code>git clone https://github.com/Balta-Tech/embedding-lens
+        <pre><code>git clone https://github.com/bal-r/embedding-lens
 cd embedding-lens && uv sync
 uv run uvicorn lens.api:app --port 8000</code></pre>
         <p class="hint">Then point this page at it from the browser console: <code>localStorage.setItem("embedding-lens:api", "http://localhost:8000")</code> and reload.</p>

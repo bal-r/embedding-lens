@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://embedding-lens.balta-tech.com/sitemap.xml
