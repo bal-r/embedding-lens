@@ -16,6 +16,11 @@ search them with text, and play against the model.
 The public demo includes 289 moments. Two moments have been withdrawn from its media,
 read-outs and game; their original IDs are reserved so the recorded study remains reproducible.
 
+[![The working explorer with fixed timeline labels, video frames and ranked phrases](docs/screenshots/explorer.jpg)](https://embedding-lens.balta-tech.com/#explore)
+
+*The running demo at Zugspitze 4:10, using Qwen3-VL-Embedding 2B and 23k phrases.
+Bubble positions are a packed layout, not a projection of semantic distance.*
+
 ## The research question
 
 Can words retrieve the right video moment while describing it poorly? In this small experiment,
@@ -90,8 +95,14 @@ uv run uvicorn lens.api:app --port 8000
 To point the deployed site at your own backend, set `localStorage["embedding-lens:api"]` (for example
 to `http://localhost:8000`) and reload.
 
+Search examples include **road**, **sky**, **racing** and **outdoors**, which match several
+videos. “Across videos” shows each video's best match at least one standard deviation above the
+corpus mean; “Top moments” keeps the overall ranking. These scores are not probabilities.
+
 Experiments: `scripts/run_experiments.sh` (all, several hours) or
 `scripts/run_experiments.sh geometry sim_real` (some). Tests: `uv run pytest`.
+Frontend data and ranking checks: `npm test`. Editorial drafts in `articles/` stay local and are
+ignored by Git; articles can link readers directly to this repository or the demo.
 
 ## Deploy
 
