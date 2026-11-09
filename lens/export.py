@@ -16,6 +16,7 @@ import numpy as np
 from lens.config import BEST_METHOD, RESULTS_DIR, ROOT, SEGMENT_SECONDS
 from lens.index import load_null, load_segments, load_vocab, model_dir
 from lens.models import load
+from lens.publication import EXCLUDED_SEGMENTS, THUMBNAILS
 from lens.readout import Space, change, sparse_decompose, unit
 from lens.videos import SOURCES, duration_seconds, segments, video_path
 
@@ -78,6 +79,7 @@ def export_manifest(models: list[str]) -> None:
             "world": source.world,
             "duration": round(duration_seconds(video_path(source))),
             "segments": len(segments(source)),
+            "thumbnailIndex": THUMBNAILS.get(source.id, len(segments(source)) // 2),
         })
     _write(DATA_OUT / "manifest.json", {
         "generated": date.today().isoformat(),
@@ -88,6 +90,7 @@ def export_manifest(models: list[str]) -> None:
         "tiers": [{"id": t, "size": len(load_vocab(models[0], t)[0])} for t in TIERS],
         "defaultTier": DEFAULT_TIER,
         "videos": videos,
+        "excludedSegments": sorted(EXCLUDED_SEGMENTS),
     })
 
 
@@ -117,6 +120,8 @@ def export_model(name: str) -> None:
 def export_readouts(name: str, tier: str, space: Space, keys: list[str], videos: np.ndarray):
     readouts = {}
     for i, (key, v) in enumerate(zip(keys, videos)):
+        if key in EXCLUDED_SEGMENTS:
+            continue
         terms, fit = sparse_decompose(v, space, 6)
         readouts[key] = {
             "raw": [[p, _r(s)] for p, s in space.top(v, TOP, "raw")],
@@ -127,7 +132,7 @@ def export_readouts(name: str, tier: str, space: Space, keys: list[str], videos:
         if i > 0 and keys[i - 1].split(":")[0] == key.split(":")[0]:
             amount, appeared, faded = change(space, videos[i - 1], v, 4)
             readouts[key]["change"] = {"amount": _r(amount, 3), "appeared": appeared, "faded": faded}
-    _write(DATA_OUT / "readouts" / f"{name}.{tier}.json", {"keys": keys, "segments": readouts})
+    _write(DATA_OUT / "readouts" / f"{name}.{tier}.json", {"keys": list(readouts), "segments": readouts})
 
 
 def _lane(space: Space, videos: np.ndarray, concept: np.ndarray) -> np.ndarray:
@@ -151,6 +156,8 @@ def export_game(name: str, space: Space, keys: list[str], videos: np.ndarray) ->
     shutil.rmtree(DATA_OUT / "game", ignore_errors=True)
     folder.mkdir(parents=True)
     for key, v in zip(keys, videos):
+        if key in EXCLUDED_SEGMENTS:
+            continue
         ranks = np.zeros(len(phrases), dtype=np.uint16)
         ranks[np.argsort(-game_space.scores(v, method))] = np.arange(1, len(phrases) + 1)
         video, index = key.split(":")
@@ -163,6 +170,9 @@ def export_media() -> None:
     for source in SOURCES:
         for seg in segments(source):
             out = MEDIA_OUT / source.id / f"{seg.index:03d}.webp"
+            if seg.key in EXCLUDED_SEGMENTS:
+                out.unlink(missing_ok=True)
+                continue
             if out.exists():
                 continue
             out.parent.mkdir(parents=True, exist_ok=True)

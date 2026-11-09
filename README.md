@@ -13,6 +13,9 @@ five-second moments; each moment is embedded into a space shared with text, and 
 land closest to it show what the model picked up. The site lets you scrub through the videos,
 search them with text, and play against the model.
 
+The public demo includes 289 moments. Two moments have been withdrawn from its media,
+read-outs and game; their original IDs are reserved so the recorded study remains reproducible.
+
 ## The research question
 
 Can words retrieve the right video moment while describing it poorly? In this small experiment,

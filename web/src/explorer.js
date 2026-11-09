@@ -1,6 +1,7 @@
 // Explore: pick a video, scrub its moments, read each one out through a model and a lens.
 import { drawBubbles } from "./bubbles.js";
 import { formatTime, loadLanes, loadReadouts, spriteUrl, timeOf, youtubeUrl } from "./data.js";
+import { visibleIndices } from "./segments.js";
 
 const LENS_NOTES = {
   raw: "Plain closeness. For Qwen3-VL and SigLIP 2 this is the most faithful read-out: checked against the frames, it beats every correction.",
@@ -27,7 +28,7 @@ export function createExplorer(manifest, state) {
     tab.type = "button";
     tab.role = "tab";
     tab.dataset.video = video.id;
-    const middle = Math.floor(video.segments / 2);
+    const middle = video.thumbnailIndex ?? Math.floor(video.segments / 2);
     tab.innerHTML = `
       <span class="thumb" style="background-image:url(${spriteUrl(`${video.id}:${middle}`)})"></span>
       <span class="world">${video.world === "sim" ? "rendered" : "camera"}</span>
@@ -64,8 +65,10 @@ export function createExplorer(manifest, state) {
 
   strip.addEventListener("keydown", (e) => {
     const video = manifest.videos.find((v) => v.id === state.video);
-    if (e.key === "ArrowRight") set({ index: Math.min(state.index + 1, video.segments - 1) });
-    else if (e.key === "ArrowLeft") set({ index: Math.max(state.index - 1, 0) });
+    const indices = visibleIndices(manifest, video.id);
+    const current = indices.indexOf(state.index);
+    if (e.key === "ArrowRight") set({ index: indices[Math.min(current + 1, indices.length - 1)] });
+    else if (e.key === "ArrowLeft") set({ index: indices[Math.max(current - 1, 0)] });
     else return;
     e.preventDefault();
   });
@@ -76,11 +79,12 @@ export function createExplorer(manifest, state) {
     const video = manifest.videos.find((v) => v.id === state.video);
     const [lanes, readouts] = await Promise.all([loadLanes(state.model), loadReadouts(state.model, state.tier)]);
     const key = `${state.video}:${state.model}:${state.tier}`;
+    const indices = visibleIndices(manifest, video.id);
     if (drawnStrip !== key) {
       drawnStrip = key;
       strip.innerHTML = "";
       const frames = row("frames", "");
-      for (let i = 0; i < video.segments; i++) {
+      for (const i of indices) {
         const b = document.createElement("button");
         b.className = "frame-btn";
         b.type = "button";
@@ -94,7 +98,7 @@ export function createExplorer(manifest, state) {
       strip.append(frames);
       // How much the vector moved since the previous moment: peaks are scene changes
       const changeRow = row("lane", "change");
-      const amounts = Array.from({ length: video.segments }, (_, i) => readouts.segments[`${video.id}:${i}`]?.change?.amount ?? 0);
+      const amounts = indices.map((i) => readouts.segments[`${video.id}:${i}`]?.change?.amount ?? 0);
       const peak = Math.max(...amounts) || 1;
       for (const amount of amounts) {
         const cell = document.createElement("span");
@@ -108,7 +112,7 @@ export function createExplorer(manifest, state) {
       const start = offsetOf(manifest, video.id);
       const ranked = lanes.concepts
         .map((c) => {
-          const values = lanes.scores[c].slice(start, start + video.segments);
+          const values = indices.map((i) => lanes.scores[c][start + i]);
           return { c, values, spread: Math.max(...values) - Math.min(...values) };
         })
         .sort((a, b) => b.spread - a.spread)
@@ -189,6 +193,10 @@ export function createExplorer(manifest, state) {
 
   async function set(patch) {
     Object.assign(state, patch);
+    const indices = visibleIndices(manifest, state.video);
+    if (!indices.includes(state.index)) {
+      state.index = indices.reduce((best, i) => Math.abs(i - state.index) < Math.abs(best - state.index) ? i : best);
+    }
     await Promise.all([renderStrip(), renderReadout()]);
     listeners.forEach((fn) => fn(state));
   }

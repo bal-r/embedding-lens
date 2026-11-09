@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test": "node --test tests/web/*.test.js",
     "dev": "vite web",
     "build": "vite build web",
     "preview": "vite preview web",

@@ -2,6 +2,7 @@
 import { backend, formatTime, liveSearch, loadSearch, spriteUrl, timeOf, youtubeUrl } from "./data.js";
 import { offsetOf } from "./explorer.js";
 import { busy, waiting } from "./wait.js";
+import { isAvailable, keyAt } from "./segments.js";
 
 const SHOW = 8;
 
@@ -62,20 +63,13 @@ export function createSearch(manifest, state, explorer) {
     render(scores);
   }
 
-  function keyAt(i) {
-    let rest = i;
-    for (const v of manifest.videos) {
-      if (rest < v.segments) return `${v.id}:${rest}`;
-      rest -= v.segments;
-    }
-    return null;
-  }
-
   function render(scores) {
-    const order = scores.map((s, i) => [s, i]).sort((a, b) => b[0] - a[0]).slice(0, SHOW);
+    const order = scores.map((s, i) => [s, i])
+      .filter(([, i]) => isAvailable(manifest, keyAt(manifest, i)))
+      .sort((a, b) => b[0] - a[0]).slice(0, SHOW);
     results.innerHTML = "";
     order.forEach(([score, i], n) => {
-      const key = keyAt(i);
+      const key = keyAt(manifest, i);
       const video = manifest.videos.find((v) => v.id === key.split(":")[0]);
       const a = document.createElement("a");
       a.className = "result";
@@ -99,6 +93,7 @@ export function createSearch(manifest, state, explorer) {
       row.innerHTML = `<span>${v.title.split(",")[0]}</span><div class="cells"></div>`;
       const cells = row.querySelector(".cells");
       for (let j = 0; j < v.segments; j++) {
+        if (!isAvailable(manifest, `${v.id}:${j}`)) continue;
         const s = scores[start + j];
         const cell = document.createElement("span");
         cell.style.opacity = Math.max(0.05, Math.min(1, s / max)).toFixed(2);

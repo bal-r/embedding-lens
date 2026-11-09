@@ -1,6 +1,7 @@
 // You vs the model: describe a moment, then see where your words rank in the model's eyes.
 import { backend, formatTime, liveScore, loadGameRanks, loadGameVocab, loadReadouts, spriteUrl, timeOf } from "./data.js";
 import { busy, waiting } from "./wait.js";
+import { isAvailable } from "./segments.js";
 
 const ROUNDS = 5;
 const MAX_WORDS = 5;
@@ -70,7 +71,7 @@ export function createGame(manifest) {
     // Skip the first and last moment of each video (intros, end screens) and frozen frames
     const pool = manifest.videos.flatMap((v) =>
       Array.from({ length: v.segments - 2 }, (_, i) => `${v.id}:${i + 1}`)
-        .filter((k) => readouts.segments[k]?.change?.appeared?.length !== 0));
+        .filter((k) => isAvailable(manifest, k) && readouts.segments[k]?.change?.appeared?.length !== 0));
     game = { rounds: shuffle(pool).slice(0, ROUNDS), round: 0, total: 0, words: [], data, index, readouts };
     renderRound();
   }

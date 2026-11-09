@@ -110,6 +110,7 @@ def export(name: str, tier: str, k: int = 50, top: int = 14) -> None:
     from lens.config import BEST_METHOD, ROOT
     from lens.index import load_segments, load_vocab
     from lens.readout import Space
+    from lens.publication import EXCLUDED_SEGMENTS
     from lens.videos import all_segments
 
     keys, videos = load_segments(name)
@@ -120,6 +121,8 @@ def export(name: str, tier: str, k: int = 50, top: int = 14) -> None:
     out = {}
     start = time.time()
     for i, (key, v) in enumerate(zip(keys, videos)):
+        if key in EXCLUDED_SEGMENTS:
+            continue
         words = [p for p, _ in space.top(v, k, BEST_METHOD[name])]
         scores = reranker.score(by_key[key], words)
         order = np.argsort(-scores)[:top]
