@@ -11,10 +11,12 @@ Each tier contains the one below it. Build with:
 
 import re
 import urllib.request
+from typing import Literal
 
 from lens.config import VOCAB_DIR
 
 TIERS = ("small", "medium", "large")
+VocabularyTier = Literal["small", "medium", "large"]
 
 SOURCES = {
     "ram": "https://raw.githubusercontent.com/xinyu1205/recognize-anything/main/ram/data/ram_tag_list.txt",
@@ -98,7 +100,16 @@ def build() -> dict[str, list[str]]:
 
 
 def load(tier: str) -> list[str]:
-    path = VOCAB_DIR / f"{tier}.txt"
+    # Select a fixed path; callers must never supply part of a filename.
+    paths = {
+        "small": VOCAB_DIR / "small.txt",
+        "medium": VOCAB_DIR / "medium.txt",
+        "large": VOCAB_DIR / "large.txt",
+    }
+    try:
+        path = paths[tier]
+    except KeyError:
+        raise ValueError(f"unknown vocabulary tier {tier!r}; expected one of {TIERS}") from None
     if not path.exists():
         build()
     return path.read_text(encoding="utf-8").splitlines()
