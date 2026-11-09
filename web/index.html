@@ -177,11 +177,16 @@
           <p class="section-sub">The same space works backwards: embed a sentence and look for the moments that sit closest to it.</p>
         </div>
         <form class="search-form" id="search-form">
-          <input id="search-input" type="search" placeholder="mountains" autocomplete="off" aria-label="Search the videos" />
+          <input id="search-input" type="search" placeholder="road, sky, racing…" autocomplete="off" aria-label="Search the videos" />
           <button class="btn primary" type="submit">Search</button>
         </form>
         <div class="chips" id="search-presets"></div>
         <p class="hint" id="search-hint"></p>
+        <div class="segmented" id="search-view" role="group" aria-label="Search result grouping">
+          <button type="button" data-view="videos" aria-pressed="true">Across videos</button>
+          <button type="button" data-view="moments" aria-pressed="false">Top moments</button>
+        </div>
+        <p class="hint" id="search-summary" role="status" aria-live="polite"></p>
         <div class="search-results" id="search-results"></div>
         <div class="search-lanes" id="search-lanes"></div>
       </section>

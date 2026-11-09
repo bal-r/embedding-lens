@@ -2,7 +2,8 @@
 import { backend, formatTime, liveSearch, loadSearch, spriteUrl, timeOf, youtubeUrl } from "./data.js";
 import { offsetOf } from "./explorer.js";
 import { busy, waiting } from "./wait.js";
-import { isAvailable, keyAt } from "./segments.js";
+import { isAvailable } from "./segments.js";
+import { alignLiveScores, rankResults } from "./search-ranking.js";
 
 const SHOW = 8;
 
@@ -14,7 +15,12 @@ export function createSearch(manifest, state, explorer) {
   const hint = $("search-hint");
   const results = $("search-results");
   const lanes = $("search-lanes");
+  const view = $("search-view");
+  const summary = $("search-summary");
   let active = null;
+  let acrossVideos = true;
+  let currentScores = null;
+  let request = 0;
 
   async function renderPresets() {
     const data = await loadSearch(state.model);
@@ -37,9 +43,12 @@ export function createSearch(manifest, state, explorer) {
   }
 
   async function run(query) {
+    const token = ++request;
+    const model = state.model;
     active = query;
     input.value = query;
-    const data = await loadSearch(state.model);
+    const data = await loadSearch(model);
+    if (token !== request) return;
     let scores = data.scores[query];
     if (!scores) {
       if (!backend.live) {
@@ -49,9 +58,9 @@ export function createSearch(manifest, state, explorer) {
       const done = busy(form.querySelector("button"), "Searching…");
       const stop = waiting(hint, "Embedding your sentence with the live model. This takes a few seconds.");
       try {
-        scores = (await liveSearch(query, state.model)).segments.map((s) => s.z);
+        scores = alignLiveScores(manifest, (await liveSearch(query, model)).segments);
       } catch {
-        hint.textContent = "The live backend didn't answer. Try a suggestion, or again in a moment.";
+        if (token === request) hint.textContent = "The live backend didn't answer. Try a suggestion, or again in a moment.";
         return;
       } finally {
         done();
@@ -59,20 +68,24 @@ export function createSearch(manifest, state, explorer) {
       }
       updateHint();
     }
+    if (token !== request) return;
+    currentScores = scores;
     renderPresets();
     render(scores);
   }
 
   function render(scores) {
-    const order = scores.map((s, i) => [s, i])
-      .filter(([, i]) => isAvailable(manifest, keyAt(manifest, i)))
-      .sort((a, b) => b[0] - a[0]).slice(0, SHOW);
+    const order = rankResults(manifest, scores, { acrossVideos, limit: SHOW });
+    const videos = new Set(order.map(({ key }) => key.split(":")[0])).size;
+    summary.textContent = `${order.length} ${order.length === 1 ? "moment" : "moments"} from ${videos} ${videos === 1 ? "video" : "videos"}. `
+      + (acrossVideos ? "Best match per video at 1σ or above; a weak query shows only its best match. " : "Highest-scoring moments overall. ")
+      + "Scores are relative to this corpus, not confidence.";
     results.innerHTML = "";
-    order.forEach(([score, i], n) => {
-      const key = keyAt(manifest, i);
+    order.forEach(({ score, key }, n) => {
       const video = manifest.videos.find((v) => v.id === key.split(":")[0]);
       const a = document.createElement("a");
       a.className = "result";
+      a.dataset.segment = key;
       a.href = youtubeUrl(manifest, key);
       a.target = "_blank";
       a.rel = "noopener";
@@ -85,7 +98,7 @@ export function createSearch(manifest, state, explorer) {
 
     // Where in each video the query lights up
     lanes.innerHTML = "";
-    const max = Math.max(...scores);
+    const max = Math.max(1, ...scores.filter(Number.isFinite));
     for (const v of manifest.videos) {
       const start = offsetOf(manifest, v.id);
       const row = document.createElement("div");
@@ -95,6 +108,7 @@ export function createSearch(manifest, state, explorer) {
       for (let j = 0; j < v.segments; j++) {
         if (!isAvailable(manifest, `${v.id}:${j}`)) continue;
         const s = scores[start + j];
+        if (!Number.isFinite(s)) continue;
         const cell = document.createElement("span");
         cell.style.opacity = Math.max(0.05, Math.min(1, s / max)).toFixed(2);
         cell.title = `${formatTime(j * manifest.segmentSeconds)}  ${s.toFixed(2)}σ`;
@@ -113,8 +127,15 @@ export function createSearch(manifest, state, explorer) {
     const q = input.value.trim();
     if (q) run(q);
   });
+  view.addEventListener("click", (e) => {
+    const button = e.target.closest("button[data-view]");
+    if (!button) return;
+    acrossVideos = button.dataset.view === "videos";
+    view.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b === button));
+    if (currentScores) render(currentScores);
+  });
   backend.listeners.add(updateHint);
   updateHint();
-  renderPresets().then(() => run("mountains"));
+  renderPresets().then(() => run("road"));
   return { run, refresh: () => active && run(active) };
 }

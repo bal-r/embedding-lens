@@ -16,7 +16,7 @@ import numpy as np
 from lens.config import BEST_METHOD, RESULTS_DIR, ROOT, SEGMENT_SECONDS
 from lens.index import load_null, load_segments, load_vocab, model_dir
 from lens.models import load
-from lens.publication import EXCLUDED_SEGMENTS, THUMBNAILS
+from lens.publication import EXCLUDED_SEGMENTS, SEARCH_QUERIES, THUMBNAILS
 from lens.readout import Space, change, sparse_decompose, unit
 from lens.videos import SOURCES, duration_seconds, segments, video_path
 
@@ -40,11 +40,7 @@ LANES = [
     "mountain", "snow", "ice", "rock", "tunnel", "night", "sky", "forest", "sea", "person",
     "face", "hands", "airplane", "car", "road", "crowd", "screen", "text", "video game",
 ]
-QUERIES = [
-    "mountains", "snow and ice", "a dark tunnel at night", "a fighter jet over the sea",
-    "go-kart racing", "a person's face up close", "a computer screen", "climbing a ladder",
-    "a summit cross", "a runway",
-]
+QUERIES = SEARCH_QUERIES
 
 
 def _write(path, payload) -> None:

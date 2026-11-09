@@ -68,7 +68,13 @@ async function main() {
   const search = createSearch(manifest, state, explorer);
   createGame(manifest);
   createLab(manifest);
-  explorer.onChange(() => search.refresh());
+  let searchModel = state.model;
+  explorer.onChange(() => {
+    if (searchModel !== state.model) {
+      searchModel = state.model;
+      search.refresh();
+    }
+  });
   const tour = createTour(explorer, state);
   document.getElementById("start-tour").addEventListener("click", () => tour.start());
   detectBackend();
